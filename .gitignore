@@ -5,6 +5,14 @@
 *.so
 *.dylib
 
+# Go / build artifacts
+*.test
+coverage.out
+pkg/
+vendor/
+_build/
+out/
+
 # Test / coverage
 *.out
 coverage/
@@ -16,6 +24,10 @@ coverage/
 
 # Docker
 .docker/
+docker-compose.override.yml
+
+# Node
+node_modules/
 
 # Editor / OS
 .vscode/
@@ -25,3 +37,10 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Misc
+*.swp
+*.swo
+*.bak
+.cache/
+.terraform/
