@@ -1,7 +1,9 @@
 name: CI
+
 on:
-  pull_request:
   push:
+  pull_request:
+
 jobs:
   quality-and-build:
     runs-on: ubuntu-latest
@@ -10,21 +12,26 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
           cache: true
-      - name: Install Go dependencies
-        run: |
-          go mod download
+
+      - name: Download dependencies
+        run: go mod download
+
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v9
         with:
           version: v2.12
-      - name: Prepare environment file
+
+      - name: Prepare environment
         run: cp .env.example .env
-      - name: Build app image
+
+      - name: Build Docker image
         run: docker build -t app .
-      - name: Validate docker compose config
+
+      - name: Validate Docker Compose
         run: docker compose config

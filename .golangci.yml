@@ -11,7 +11,3 @@ formatters:
   enable:
     - gofmt
     - goimports
-
-settings:
-  gofmt:
-    simplify: true
