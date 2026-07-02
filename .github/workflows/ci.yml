@@ -18,8 +18,10 @@ jobs:
       - name: Install Go dependencies
         run: |
           go mod download
-      - name: Lint
-        uses: golangci/golangci-lint-action@v6
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.12 
       - name: Prepare environment file
         run: cp .env.example .env
       - name: Build app image
