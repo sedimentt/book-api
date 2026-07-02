@@ -1,5 +1,4 @@
-run:
-  timeout: 5m
+version: "2"
 
 linters:
   enable:
@@ -7,8 +6,8 @@ linters:
     - govet
     - staticcheck
     - unused
+
+formatters:
+  enable:
     - gofmt
     - goimports
-linters-settings:
-  gofmt:
-    simplify: true

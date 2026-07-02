@@ -1,5 +1,5 @@
 module github.com/sedimentt/book-api
 
-go 1.26.4
+go 1.26
 
 require github.com/lib/pq v1.12.3

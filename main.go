@@ -12,8 +12,8 @@ import (
 )
 
 type Book struct {
-	ID    int    `json:"id"`
-	Title string `json:"title"`
+	ID     int    `json:"id"`
+	Title  string `json:"title"`
 	Author string `json:"author"`
 }
 
@@ -44,7 +44,10 @@ func main() {
 
 func healthHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("OK"))
+	if _, err := w.Write([]byte("OK")); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
 }
 
 func booksHandler(w http.ResponseWriter, r *http.Request) {
@@ -56,17 +59,26 @@ func booksHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), 500)
 			return
 		}
-		defer rows.Close()
+		defer func() {
+			if err := rows.Close(); err != nil {
+				log.Println(err)
+			}
+		}()
 
 		var books []Book
 
 		for rows.Next() {
 			var b Book
-			rows.Scan(&b.ID, &b.Title, &b.Author)
+			if err := rows.Scan(&b.ID, &b.Title, &b.Author); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 			books = append(books, b)
 		}
 
-		json.NewEncoder(w).Encode(books)
+		if err := json.NewEncoder(w).Encode(books); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 
 	case http.MethodPost:
 		var b Book
