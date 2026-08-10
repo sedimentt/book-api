@@ -1,0 +1,40 @@
+groups:
+  - name: application
+    rules:
+
+      - alert: ApplicationDown
+        expr: up{job="book-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Book API is down"
+          description: "Book API has been unavailable for more than 1 minute."
+
+      - alert: HighHTTPErrorRate
+        expr: |
+          (
+            rate(http_errors_total[5m])
+            /
+            rate(http_requests_total[5m])
+          ) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High HTTP error rate"
+          description: "More than 10% of HTTP requests are resulting in errors."
+
+      - alert: HighHTTPLatency
+        expr: |
+          (
+            rate(http_request_duration_seconds_sum[5m])
+            /
+            rate(http_request_duration_seconds_count[5m])
+          ) > 1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High HTTP latency"
+          description: "Average HTTP request latency is above 1 second."
