@@ -1,13 +1,16 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -93,8 +96,36 @@ func main() {
 	http.HandleFunc("/health", healthHandler)
 	http.HandleFunc("/books", booksHandler)
 
+	server := &http.Server{
+		Addr:    ":8080",
+		Handler: nil,
+	}
+
 	log.Println("Server started on :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+
+	go func() {
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatal(err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
+
+	<-quit
+
+	log.Println("Shutdown signal received")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(ctx); err != nil {
+		log.Printf("Server forced to shutdown: %v", err)
+	}
+	if err := db.Close(); err != nil {
+		log.Printf("Error closing database: %v", err)
+	}
+	log.Println("Server stopped")
 
 }
 
