@@ -19,7 +19,6 @@ services:
       start_period: 10s
 
   app:
-    build: .
     image: ghcr.io/sedimentt/book-api:latest
     restart: unless-stopped
     ports:
