@@ -85,8 +85,8 @@ The project gradually grows from a simple REST API into a reliable, observable, 
 
 ### v4.0 — Automation
 
-- [ ] Ansible
-- [ ] Infrastructure automation
+- [x] Ansible
+- [x] Infrastructure automation
 
 ### v5.0 — Kubernetes
 
@@ -117,6 +117,7 @@ The project gradually grows from a simple REST API into a reliable, observable, 
 - Docker
 - Docker Compose
 - Nginx
+- Ansible
 
 ### Observability
 
@@ -249,12 +250,45 @@ The project uses the following environment variables:
 
 See `.env.example` for default values.
 
+## Infrastructure Automation
+
+The project uses Ansible to automate VPS provisioning and application deployment.
+
+### What Ansible does
+
+The playbook (`ansible/playbook.yml`) performs the following on a fresh Ubuntu server:
+
+1. Installs system dependencies (ca-certificates, curl, git).
+2. Installs Docker Engine and Docker Compose plugin.
+3. Creates a `deploy` user with Docker access.
+4. Adds your SSH public key for the `deploy` user.
+5. Clones the repository from GitHub.
+6. Generates the `.env` file from a Jinja2 template.
+7. Pulls the latest Docker images.
+8. Starts the application stack with `docker compose up -d`.
+
+### Usage
+
+```bash
+# Edit ansible/vars.yml to set your SSH key and DB credentials
+# Then run:
+ansible-playbook -i ansible/inventory.ini ansible/playbook.yml
+```
+
+The inventory targets a single production host (`prod`) at `104.252.127.239`.
+
 ## Project Structure
 
 ```text
 .
 ├── alertmanager/
 │   └── alertmanager.yml
+├── ansible/
+│   ├── inventory.ini
+│   ├── playbook.yml
+│   ├── templates/
+│   │   └── .env.j2
+│   └── vars.yml
 ├── db/
 │   └── init.sql
 ├── grafana/
