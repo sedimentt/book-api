@@ -1,0 +1,6 @@
+deploy_ssh_public_key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGKqcEPLSlwcPVVBsQavWR+BUs0VcQtaRWl/YdzzlXSg d.safin@innopolis.university"
+db_host: postgres
+db_port: 5432
+db_user: postgres
+db_password: postgres
+db_name: books

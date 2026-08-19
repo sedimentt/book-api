@@ -1,0 +1,96 @@
+- name: Configure VPS
+  hosts: vps
+  become: true
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Install required packages
+      ansible.builtin.apt:
+        name:
+          - ca-certificates
+          - curl
+          - git
+        state: present
+
+    - name: Add Docker GPG key
+      ansible.builtin.get_url:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        dest: /etc/apt/keyrings/docker.asc
+        mode: "0644"
+        force: false
+
+    - name: Add Docker repository
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        filename: docker
+        state: present
+
+    - name: Install Docker and Compose plugin
+      ansible.builtin.apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+        update_cache: true
+
+    - name: Ensure Docker is running
+      ansible.builtin.systemd:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Create deploy user
+      ansible.builtin.user:
+        name: deploy
+        groups: docker
+        append: true
+        shell: /bin/bash
+
+    - name: Add SSH key for deploy user
+      ansible.posix.authorized_key:
+        user: deploy
+        state: present
+        key: "{{ deploy_ssh_public_key }}"
+
+    - name: Create application directory
+      ansible.builtin.file:
+        path: /home/deploy/book-api
+        state: directory
+        owner: deploy
+        group: deploy
+        mode: "0755"
+    - name: Clone Book API repository
+      become: true
+      become_user: deploy
+      ansible.builtin.git:
+        repo: "https://github.com/sedimentt/book-api.git"
+        dest: /home/deploy/book-api
+        version: main
+    - name: Create application environment file
+      ansible.builtin.template:
+        src: templates/.env.j2
+        dest: /home/deploy/book-api/.env
+        owner: deploy
+        group: deploy
+        mode: "0600"
+    - name: Pull application images
+      become: true
+      become_user: deploy
+      ansible.builtin.command:
+        cmd: docker compose pull
+        chdir: /home/deploy/book-api
+
+    - name: Start application stack
+      become: true
+      become_user: deploy
+      ansible.builtin.command:
+        cmd: docker compose up -d
+        chdir: /home/deploy/book-api
