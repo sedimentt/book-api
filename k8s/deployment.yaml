@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: book-api
+  namespace: book-api
+
+spec:
+  replicas: 3
+
+  selector:
+    matchLabels:
+      app: book-api
+
+  template:
+    metadata:
+      labels:
+        app: book-api
+
+    spec:
+      containers:
+        - name: book-api
+          image: ghcr.io/sedimentt/book-api:latest
+          ports:
+            - containerPort: 8080
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
