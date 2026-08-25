@@ -25,5 +25,3 @@ jobs:
           script: |
             cd ~/book-api
             git pull
-            docker compose pull
-            docker compose up -d
